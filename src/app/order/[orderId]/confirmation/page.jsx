@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { confirmCheckoutPayment, confirmPaymentIntent, getTrackedOrder } from "../../../../../lib/orders";
 import { formatCurrency } from "../../../../utils/helpers";
-import SyncGuestContact from "../../../../features/order/SyncGuestContact";
 
 export default async function OrderConfirmationPage({ params, searchParams }) {
   const { orderId: accessToken } = await params;
@@ -22,6 +22,7 @@ export default async function OrderConfirmationPage({ params, searchParams }) {
   }
 
   const currentOrder = await getTrackedOrder(accessToken);
+  if (currentOrder?.paymentStatus === "failed") redirect(`/order/${accessToken}/failed`);
   if (currentOrder?.paymentStatus !== "paid") {
     return (
       <section className="space-y-5 px-4 py-8">
@@ -39,7 +40,6 @@ export default async function OrderConfirmationPage({ params, searchParams }) {
 
   return (
     <section className="space-y-6 px-4 py-8">
-      <SyncGuestContact customer={currentOrder.customer} />
       <div>
         <p className="font-semibold text-green-700">Payment received</p>
         <h1 className="mt-2 text-2xl font-semibold">Thanks for your order!</h1>

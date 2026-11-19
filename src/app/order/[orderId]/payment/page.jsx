@@ -20,7 +20,7 @@ export default async function PaymentPage({ params, searchParams }) {
       <div>
         <h1 className="text-2xl font-semibold">Payment for order #{order.orderNumber}</h1>
         <p className="mt-2 text-sm text-stone-600">
-          Your order is saved. Review the prefilled, editable contact details in Stripe&apos;s secure test payment form.
+          Your order is saved. Review your editable contact details and enter card details in Stripe&apos;s secure test payment fields.
         </p>
       </div>
 
@@ -54,8 +54,8 @@ export default async function PaymentPage({ params, searchParams }) {
         />
       )}
 
-      <Link className="inline-block text-sm text-blue-700 underline" href={`/order/${accessToken}`}>
-        Back to order tracking
+      <Link className="inline-block text-sm text-blue-700 underline" href={`/order/new?accessToken=${encodeURIComponent(accessToken)}`}>
+        Back to contact information
       </Link>
     </section>
   );

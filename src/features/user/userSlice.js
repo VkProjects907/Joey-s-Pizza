@@ -42,6 +42,12 @@ const userSlice = createSlice({
     updateName(state, action) {
       state.username = action.payload;
     },
+    clearAddress(state) {
+      state.position = {};
+      state.address = '';
+      state.error = '';
+      state.status = 'idle';
+    },
   },
   extraReducers: (builder) =>
     builder
@@ -60,6 +66,6 @@ const userSlice = createSlice({
       }),
 });
 
-export const { updateName } = userSlice.actions;
+export const { updateName, clearAddress } = userSlice.actions;
 
 export default userSlice.reducer;

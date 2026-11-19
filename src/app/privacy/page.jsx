@@ -87,6 +87,10 @@ export default function PrivacyPolicyPage() {
           Read the Joey&apos;s Pizza Terms and Conditions.
         </Link>
       </p>
+          <section className="space-y-2">
+        <h2 className="text-xl font-semibold text-stone-900">Accounts</h2>
+        <p>If you create an account, we collect your name and email address and store a bcrypt password hash to authenticate you; we do not store your password in plain text. An HTTP-only session cookie keeps you signed in, and orders you create while signed in are linked to your account so you can view their order history. Guest orders remain separate from account orders.</p>
+      </section>
     </article>
   );
 }

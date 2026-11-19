@@ -19,6 +19,7 @@ export async function getOrder(accessToken) {
 export async function createOrder(newOrder) {
   const res = await fetch("/api/orders", {
     method: "POST",
+    credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newOrder),
     cache: "no-store",

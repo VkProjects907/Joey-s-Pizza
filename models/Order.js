@@ -27,6 +27,9 @@ const OrderSchema = new mongoose.Schema(
     checkoutSessionId: { type: String, unique: true, sparse: true, select: false },
     checkoutStarted: { type: Boolean, default: false },
     paymentIntentId: { type: String, select: false },
+    paymentAttemptId: { type: String, select: false },
+    pendingExpiresAt: { type: Date },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true, default: null },
     customer: {
       name: { type: String, required: true, trim: true },
       phone: { type: String, required: true, trim: true },
@@ -53,9 +56,10 @@ const OrderSchema = new mongoose.Schema(
       enum: ["pending", "paid", "failed", "refunded"],
       default: "pending",
     },
+    paidAt: { type: Date },
     orderStatus: {
       type: String,
-      enum: ["received", "preparing", "out_for_delivery", "delivered", "cancelled"],
+      enum: ["pending_payment", "received", "preparing", "out_for_delivery", "delivered", "cancelled"],
       default: "received",
     },
     deliveryEstimateAt: { type: Date },
@@ -66,6 +70,8 @@ const OrderSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+OrderSchema.index({ pendingExpiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const Order = mongoose.models.Order || mongoose.model("Order", OrderSchema);
 

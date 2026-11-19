@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../../../lib/mongodb";
 import { getStripe } from "../../../../../lib/stripe";
-import { updateOrderFromPaymentIntent } from "../../../../../lib/orders";
+import { markOrderPaid, updateOrderFromPaymentIntent } from "../../../../../lib/orders";
 import Order from "../../../../../models/Order";
 import { sendOrderNotifications } from "../../../../../lib/orderNotifications";
 
@@ -55,7 +55,7 @@ export async function POST(request) {
       }
 
       await updateOrderFromPaymentIntent(order, intent);
-      order.paymentStatus = "paid";
+      markOrderPaid(order);
       order.paymentIntentId = intent.id;
       await order.save();
       await sendOrderNotifications(order);
@@ -66,6 +66,7 @@ export async function POST(request) {
       const order = await Order.findOne({ paymentIntentId: event.data.object.id });
       if (order && order.paymentStatus === "pending") {
         order.paymentStatus = "failed";
+        order.orderStatus = "pending_payment";
         await order.save();
       }
       return NextResponse.json({ received: true });
@@ -104,7 +105,7 @@ export async function POST(request) {
       if (session.customer_details?.phone) {
         order.customer.phone = session.customer_details.phone;
       }
-      order.paymentStatus = "paid";
+      markOrderPaid(order);
       order.paymentIntentId = typeof session.payment_intent === "string"
         ? session.payment_intent
         : session.payment_intent?.id;
@@ -112,6 +113,7 @@ export async function POST(request) {
       await sendOrderNotifications(order);
     } else if (order.paymentStatus === "pending") {
       order.paymentStatus = "failed";
+      order.orderStatus = "pending_payment";
       await order.save();
     }
 

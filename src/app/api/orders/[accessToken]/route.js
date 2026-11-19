@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../../../lib/mongodb";
-import { getTrackedOrder, hashAccessToken, toPublicOrder } from "../../../../../lib/orders";
+import { canAccessOrder, getTrackedOrder, hashAccessToken, markOrderPaid, toPublicOrder } from "../../../../../lib/orders";
 import { getStripe } from "../../../../../lib/stripe";
 import Order from "../../../../../models/Order";
 
@@ -13,7 +13,7 @@ export async function GET(_request, { params }) {
     if (!order) {
       return NextResponse.json({ message: "Order not found." }, { status: 404 });
     }
-    return NextResponse.json({ data: order });
+    return NextResponse.json({ data: order }, { headers: { "Cache-Control": "private, no-store" } });
   } catch {
     return NextResponse.json({ message: "Could not load this order." }, { status: 500 });
   }
@@ -31,6 +31,9 @@ export async function PATCH(request, { params }) {
     const order = await Order.findOne({ accessTokenHash: hashAccessToken(accessToken) })
       .select("+checkoutSessionId");
     if (!order) {
+      return NextResponse.json({ message: "Order not found." }, { status: 404 });
+    }
+    if (!(await canAccessOrder(order))) {
       return NextResponse.json({ message: "Order not found." }, { status: 404 });
     }
     if (["paid", "refunded"].includes(order.paymentStatus)) {
@@ -80,7 +83,7 @@ export async function PATCH(request, { params }) {
       const session = await stripe.checkout.sessions.retrieve(order.checkoutSessionId);
       if (session.status === "complete") {
         if (session.payment_status === "paid") {
-          order.paymentStatus = "paid";
+          markOrderPaid(order);
           order.paymentIntentId = typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id;
@@ -96,7 +99,7 @@ export async function PATCH(request, { params }) {
       order.checkoutStarted = false;
     }
 
-    order.customer = { name, phone, address, email };
+    order.customer = { name, phone, address, email, smsOptIn: order.customer.smsOptIn };
     await order.save();
     return NextResponse.json({ data: toPublicOrder(order) });
   } catch (error) {

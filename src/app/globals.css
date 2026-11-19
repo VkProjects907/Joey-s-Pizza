@@ -14,7 +14,7 @@ body {
 }
 
 @theme {
-  --font-sans: "Roboto Mono", monospace;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   --font-size-huge: 80rem;
   --height-screen: 100dvh;
@@ -28,14 +28,14 @@ html {
 
 body {
   min-height: 100%;
-  font-family: "Roboto Mono", monospace;
+  font-family: var(--font-sans);
 }
 
 /* Reusable components */
 
 @layer components {
   .input {
-    @apply rounded-full border border-stone-200 px-4 py-2 text-sm transition-all duration-300 placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-400 md:px-6 md:py-3;
+    @apply rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm transition-colors placeholder:text-stone-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 md:px-4 md:py-3;
   }
 
   .loader {

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import OrderItem from "./OrderItem";
-import UpdateOrder from "./UpdateOrder";
 import LiveCountdown from "./LiveCountdown";
 import { getMenu } from "../../services/apiRestaurant";
 import { getTrackedOrder } from "../../../lib/orders";
@@ -11,6 +10,23 @@ export default async function OrderPage({ params }) {
   const order = await getTrackedOrder(accessTokenOrNumber);
   if (!order) {
     return <p className="px-4 py-6">We couldn't find that order. Check your tracking link or confirmation number and try again.</p>;
+  }
+  if (order.paymentStatus !== "paid") {
+    return (
+      <section className="space-y-4 px-4 py-8">
+        <h1 className="text-2xl font-semibold">Payment not completed</h1>
+        <p className="text-stone-600">This order hasn&apos;t been accepted yet. The delivery countdown starts after payment is confirmed.</p>
+        {order.canManage ? (
+          <Link className="inline-flex rounded-lg bg-stone-900 px-4 py-2.5 font-semibold text-white hover:bg-stone-700" href={`/order/${accessTokenOrNumber}/payment`}>
+            Continue to payment
+          </Link>
+        ) : (
+          <Link className="inline-flex rounded-lg border border-stone-300 px-4 py-2.5 font-semibold text-stone-800 hover:bg-white" href="/menu">
+            Return to menu
+          </Link>
+        )}
+      </section>
+    );
   }
 
   let menu = [];
@@ -28,8 +44,6 @@ export default async function OrderPage({ params }) {
     orderPrice,
     estimatedDelivery,
     paymentStatus,
-    checkoutStarted,
-    canManage,
     cart,
   } = order;
 
@@ -83,14 +97,6 @@ export default async function OrderPage({ params }) {
         </p>
       </div>
 
-      {canManage && ["pending", "failed"].includes(paymentStatus) && (
-        <Link className="inline-block text-blue-700 underline" href={`/order/${accessTokenOrNumber}/payment`}>
-          Continue to payment
-        </Link>
-      )}
-      {canManage && !priority && !checkoutStarted && paymentStatus === "pending" && (
-        <UpdateOrder orderId={accessTokenOrNumber} />
-      )}
     </div>
   );
 }

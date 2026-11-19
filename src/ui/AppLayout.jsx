@@ -1,16 +1,16 @@
 import Header from "./Header";
-import CartOverview from "../features/cart/CartOverview";
+import SiteFooter from "./SiteFooter";
 
 function AppLayout({ children }) {
   return (
-    <div className="grid h-screen grid-rows-[auto_1fr_auto]">
+    <div className="flex min-h-dvh flex-col bg-stone-50">
       <Header />
 
-      <div className="overflow-scroll">
-        <main className="mx-auto max-w-3xl">{children}</main>
-      </div>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-0">
+        {children}
+      </main>
 
-      <CartOverview />
+      <SiteFooter />
     </div>
   );
 }

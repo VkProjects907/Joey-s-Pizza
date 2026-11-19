@@ -1,15 +1,23 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
-import connectDB from "../../../../lib/mongodb";
-import { hashAccessToken } from "../../../../lib/orders";
+import { cleanupUnpaidOrders, hashAccessToken } from "../../../../lib/orders";
 import Order from "../../../../models/Order";
 import { getMenu } from "../../../services/apiRestaurant";
+import { getCurrentUser } from "../../../../lib/auth";
 
 export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
     const input = await request.json();
+    const currentUser = await getCurrentUser();
+    const accountOrderRequested = input.accountOrderRequested === true;
+    if (accountOrderRequested && !currentUser) {
+      return NextResponse.json(
+        { message: "Your account session expired. Please sign in again before placing this order." },
+        { status: 401 },
+      );
+    }
     const customerName = String(input.customer ?? "").trim();
     const phone = String(input.phone ?? "").trim();
     const address = String(input.address ?? "").trim();
@@ -76,11 +84,11 @@ export async function POST(request) {
       : undefined;
     const accessToken = randomBytes(32).toString("hex");
     const orderNumber = randomBytes(10).toString("hex").toUpperCase();
-
-    await connectDB();
+    await cleanupUnpaidOrders();
     const order = await Order.create({
       orderNumber,
       accessTokenHash: hashAccessToken(accessToken),
+      userId: currentUser?.id || null,
       customer: { name: customerName, phone: smsOptIn ? normalizedSmsPhone : phone, address, email, smsOptIn },
       position,
       items,
@@ -90,12 +98,12 @@ export async function POST(request) {
       totalCents: subtotalCents + priorityFeeCents,
       currency: "USD",
       paymentStatus: "pending",
-      orderStatus: "received",
-      deliveryEstimateAt: new Date(Date.now() + 30 * 60 * 1000),
+      orderStatus: "pending_payment",
+      pendingExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
 
     return NextResponse.json(
-      { id: accessToken, orderNumber: order.orderNumber },
+      { id: accessToken, orderNumber: order.orderNumber, accountOrderLinked: Boolean(currentUser) },
       { status: 201 },
     );
   } catch (error) {

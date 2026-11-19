@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 
 import { createOrder } from "../../services/apiRestaurant";
@@ -10,9 +9,8 @@ import Button from "../../ui/Button";
 import EmptyCart from "../cart/EmptyCart";
 import { clearCart, getCart, getTotalCartPrice } from "../cart/cartSlice";
 import { formatCurrency } from "../../utils/helpers";
-import { fetchAddress } from "../user/userSlice";
-import { readGuestContact, saveGuestContact } from "../../utils/guestContact";
-import { useNavigationLoading } from "../../ui/NavigationLoadingProvider";
+import { clearAddress, fetchAddress } from "../user/userSlice";
+import { clearGuestContact } from "../../utils/guestContact";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -24,36 +22,38 @@ function CreateOrder() {
   const [withPriority, setWithPriority] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [contact, setContact] = useState({ name: "", phone: "", address: "", email: "" });
-  const didRestoreContact = useRef(false);
-
-  const router = useRouter();
+  const [contact, setContact] = useState({ name: "", phone: "+1 ", address: "", email: "" });
   const dispatch = useDispatch();
 
-  const { startNavigation } = useNavigationLoading();
-
   const {
-    username,
     status: addressStatus,
     position,
-    address,
     error: errorAddress,
   } = useSelector((state) => state.user);
 
   const isLoadingAddress = addressStatus === "loading";
 
   useEffect(() => {
-    if (didRestoreContact.current) return;
-    const savedContact = readGuestContact();
-    setContact(savedContact || { name: username || "", phone: "", address: address || "", email: "" });
-    didRestoreContact.current = true;
-  }, [username, address]);
+    clearGuestContact();
+    dispatch(clearAddress());
+  }, [dispatch]);
 
   const cart = useSelector(getCart);
   const totalCartPrice = useSelector(getTotalCartPrice);
+  const accountName = useSelector((state) => state.user.username);
 
   const priorityPrice = withPriority ? totalCartPrice * 0.2 : 0;
   const totalPrice = totalCartPrice + priorityPrice;
+
+  async function handleGetPosition(event) {
+    event.preventDefault();
+    try {
+      const result = await dispatch(fetchAddress()).unwrap();
+      setContact((current) => current.address ? current : { ...current, address: result.address });
+    } catch {
+      // The address error is displayed from the Redux state below.
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -70,6 +70,7 @@ function CreateOrder() {
       cart,
       priority: withPriority,
       smsOptIn: data.smsOptIn === "on",
+      accountOrderRequested: Boolean(accountName),
     };
 
     const errors = {};
@@ -92,17 +93,10 @@ function CreateOrder() {
       setIsSubmitting(true);
 
       const newOrder = await createOrder(order);
-      saveGuestContact({
-        name: String(data.customer || ""),
-        phone: String(data.phone || ""),
-        address: String(data.address || ""),
-        email: String(data.email || ""),
-      });
 
       dispatch(clearCart());
 
-      startNavigation();
-      router.push(`/order/${newOrder.id}/payment`);
+      window.location.assign(`/order/${encodeURIComponent(newOrder.id)}/payment`);
     } catch (error) {
       setFormErrors({
         general: error.message || "Something went wrong. Please try again.",
@@ -148,10 +142,13 @@ function CreateOrder() {
               type="tel"
               name="phone"
               id="phone"
+              autoComplete="tel"
+              placeholder="+1 555 123 4567"
               value={contact.phone}
               onChange={(event) => setContact((current) => ({ ...current, phone: event.target.value }))}
               required
             />
+            <p className="mt-1 text-xs text-stone-500">Enter a different country code if needed.</p>
 
             {formErrors.phone && (
               <p className="mt-2 rounded-md bg-red-100 p-2 text-xs text-red-700">
@@ -211,10 +208,7 @@ function CreateOrder() {
               <Button
                 disabled={isLoadingAddress}
                 type="small"
-                onClick={(e) => {
-                  e.preventDefault();
-                  dispatch(fetchAddress());
-                }}
+                onClick={handleGetPosition}
               >
                 Get position
               </Button>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "../../../../../lib/mongodb";
-import { hashAccessToken, updateOrderFromPaymentIntent } from "../../../../../lib/orders";
+import { canAccessOrder, hashAccessToken, markOrderPaid, updateOrderFromPaymentIntent } from "../../../../../lib/orders";
+import { randomUUID } from "node:crypto";
 import { getStripe } from "../../../../../lib/stripe";
 import Order from "../../../../../models/Order";
 import { sendOrderNotifications } from "../../../../../lib/orderNotifications";
@@ -23,9 +24,9 @@ export async function POST(request) {
 
     await connectDB();
     const order = await Order.findOne({ accessTokenHash: hashAccessToken(accessToken) })
-      .select("+checkoutSessionId +paymentIntentId");
+      .select("+checkoutSessionId +paymentIntentId +paymentAttemptId");
 
-    if (!order) return NextResponse.json({ message: "Order not found." }, { status: 404 });
+    if (!order || !(await canAccessOrder(order))) return NextResponse.json({ message: "Order not found." }, { status: 404 });
     if (["paid", "refunded"].includes(order.paymentStatus)) {
       return NextResponse.json({ message: "This order cannot be checked out." }, { status: 409 });
     }
@@ -37,7 +38,7 @@ export async function POST(request) {
     if (order.checkoutSessionId) {
       const oldSession = await stripe.checkout.sessions.retrieve(order.checkoutSessionId);
       if (oldSession.status === "complete" && oldSession.payment_status === "paid") {
-        order.paymentStatus = "paid";
+        markOrderPaid(order);
         order.paymentIntentId = typeof oldSession.payment_intent === "string"
           ? oldSession.payment_intent
           : oldSession.payment_intent?.id;
@@ -61,7 +62,7 @@ export async function POST(request) {
       });
       if (existingIntent.status === "succeeded") {
         await updateOrderFromPaymentIntent(order, existingIntent);
-        order.paymentStatus = "paid";
+        markOrderPaid(order);
         await order.save();
         await sendOrderNotifications(order);
         return NextResponse.json({ alreadyPaid: true });
@@ -73,7 +74,11 @@ export async function POST(request) {
         });
       }
       order.paymentIntentId = undefined;
+      order.paymentAttemptId = randomUUID();
     }
+
+    if (!order.paymentAttemptId) order.paymentAttemptId = randomUUID();
+    await order.save();
 
     const metadata = {
       orderId: String(order._id),
@@ -86,7 +91,7 @@ export async function POST(request) {
       metadata,
       description: `Joey's Pizza order #${order.orderNumber}`,
     }, {
-      idempotencyKey: `pizza-order-${order._id}-${order.totalCents}-${order.updatedAt.getTime()}`,
+      idempotencyKey: `pizza-order-${order._id}-${order.paymentAttemptId}`,
     });
 
     order.paymentIntentId = intent.id;
@@ -95,9 +100,19 @@ export async function POST(request) {
 
     return NextResponse.json({ clientSecret: intent.client_secret, paymentIntentId: intent.id });
   } catch (error) {
-    console.error("Stripe PaymentIntent creation failed:", error.message);
+    console.error("Stripe PaymentIntent setup failed:", {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      param: error.param,
+      requestId: error.requestId,
+    });
     return NextResponse.json(
-      { message: "Could not start test checkout. Check the server configuration and try again." },
+      {
+        message: process.env.NODE_ENV === "development" && error instanceof Error
+          ? error.message
+          : "Could not start test checkout. Check the server configuration and try again.",
+      },
       { status: 500 },
     );
   }

@@ -55,6 +55,10 @@ export default function TermsPage() {
           for details on how information is handled.
         </p>
       </section>
+          <section className="space-y-2">
+        <h2 className="text-xl font-semibold text-stone-900">Accounts</h2>
+        <p>You may create an account to review orders placed while signed in. Keep your password private and sign out when using a shared device. Orders placed as a guest are not automatically added to an account.</p>
+      </section>
     </article>
   );
 }

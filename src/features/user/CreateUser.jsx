@@ -44,7 +44,7 @@ function CreateUser() {
 
       {username.trim() !== "" && (
         <div>
-          <Button type="primary">Start ordering</Button>
+          <Button type="primary" htmlType="submit">Start ordering</Button>
         </div>
       )}
     </form>
