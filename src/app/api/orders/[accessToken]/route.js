@@ -99,7 +99,22 @@ export async function PATCH(request, { params }) {
       order.checkoutStarted = false;
     }
 
-    order.customer = { name, phone, address, email, smsOptIn: order.customer.smsOptIn };
+    const normalizedPhone = phone.replace(/[\s().-]/g, "");
+    const smsOptIn = customer.smsOptIn === true;
+    if (smsOptIn && !/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+      return NextResponse.json(
+        { message: "For text updates, enter the phone number in international format, such as +14155552671." },
+        { status: 400 },
+      );
+    }
+    order.customer = {
+      name,
+      phone: smsOptIn ? normalizedPhone : phone,
+      smsPhone: smsOptIn ? normalizedPhone : undefined,
+      address,
+      email,
+      smsOptIn,
+    };
     await order.save();
     return NextResponse.json({ data: toPublicOrder(order) });
   } catch (error) {

@@ -84,6 +84,9 @@ function PaymentForm({ accessToken, clientSecret, customer, totalCents }) {
           },
         }}
       />
+      <p className="-mt-2 text-xs leading-5 text-stone-600">
+        Stripe may collect or let you edit a phone number for payment billing. That is not SMS consent and does not change the order contact number you entered. Joey&apos;s Pizza sends a text only if you checked the optional SMS box on the contact form, and only to that contact-form number.
+      </p>
       {errorMessage && <p role="alert" className="rounded-md bg-red-100 p-3 text-sm text-red-700">{errorMessage}</p>}
       <Button type="primary" htmlType="submit" disabled={!stripe || isPaying}>
         {isPaying ? "Processing test payment..." : `Pay ${formatCurrency(totalCents / 100)} in test mode`}

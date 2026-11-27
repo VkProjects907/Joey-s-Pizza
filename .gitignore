@@ -9,15 +9,6 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-**/node_modules/
-frontend/node_modules/
-frontend/build/
-backend/node_modules/
-.codex-stripe-backup-*/
-.codex-order-backup-*/
-.netlify/
-Joey's Pizza/
-
 
 # testing
 /coverage

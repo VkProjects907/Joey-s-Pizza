@@ -55,7 +55,7 @@ export default function EditOrderContact({ accessToken, initialCustomer }) {
           changes closes any open checkout session.
         </p>
         <label className="block text-sm font-medium">
-          Name
+          Full name
           <input className="input mt-1 w-full" name="name" value={customer.name} onChange={updateField} required minLength={2} maxLength={100} />
         </label>
         <label className="block text-sm font-medium">

@@ -19,7 +19,7 @@
     "react-dom": "19.3.0",
     "react-redux": "^9.3.1",
     "react-router-dom": "^7.18.5",
-    "resend": "^6.39.0",
+    "resend": "^6.40.1",
     "stripe": "^23.1.0",
     "twilio": "^6.3.1"
   },

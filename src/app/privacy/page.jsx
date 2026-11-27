@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
       <h1 className="text-3xl font-bold text-stone-900">Privacy Policy</h1>
       <p>
         <strong>Joey&apos;s Pizza</strong> operates this pizza ordering
-        application as a demonstration project. Last updated: November 17, 2026.
+        application as a demonstration project. Last updated: November 26, 2026.
       </p>
 
       <section className="space-y-2">
@@ -21,8 +21,10 @@ export default function PrivacyPolicyPage() {
         </h2>
         <p>
           When you place a demo order, we collect the name, delivery address,
-          phone number, email address (if provided), order items, order and
-          payment status, and any SMS consent choice. If you use location
+          phone number for delivery coordination and order support, email
+          address (if provided), order items, order and payment status, and any
+          separate SMS consent choice. Providing a phone number for order
+          contact does not enroll you in text messages. If you use location
           lookup, the app may receive approximate device location to help fill
           the delivery address.
         </p>
@@ -35,8 +37,13 @@ export default function PrivacyPolicyPage() {
         <p>
           We use order information to create and display the demo order,
           simulate preparation and tracking, provide customer support, and send
-          an order confirmation by email or—only when you opt in—SMS. Stripe
-          processes test payment details. Joey&apos;s Pizza does not store full
+          an order confirmation by email or—only when you separately opt in—SMS.
+          SMS consent is optional and is not required to order, create an
+          account, or use the service. Stripe processes test payment details.
+          A phone number entered in Stripe is payment billing information and
+          does not enroll you in SMS or change the SMS recipient. If you opt in,
+          a text is sent only to the phone number from the order contact form.
+          Joey&apos;s Pizza does not store full
           card numbers or security codes in its database.
         </p>
       </section>

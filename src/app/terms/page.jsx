@@ -14,7 +14,7 @@ export default function TermsPage() {
       </h1>
       <p>
         <strong>Joey&apos;s Pizza Demo</strong> is a demonstration pizza
-        ordering application. Last updated: November 17, 2026.
+        ordering application. Last updated: November 26, 2026.
       </p>
 
       <section className="space-y-2">
@@ -35,10 +35,16 @@ export default function TermsPage() {
         </h2>
         <p>
           The Joey&apos;s Pizza Order Confirmation program sends one
-          transactional SMS order confirmation for each paid demo order when the
-          customer checks the optional SMS consent box. Consent is not a
-          condition of purchase. Message and data rates may apply. Message
-          frequency is one message per paid order.{" "}
+          transactional SMS order confirmation for each paid demo order only
+          when the customer separately selects the optional SMS consent box at
+          checkout. A phone number requested for delivery coordination or order
+          support is not SMS consent. Customers can place an order, create an
+          account, and use the service without agreeing to texts. Consent is
+          not a condition of purchase. Message and data rates may apply. Message
+          frequency is one message per paid order. Any phone number entered in
+          Stripe is for payment billing and does not change the SMS recipient;
+          opted-in texts go only to the number entered in the order contact
+          form.{" "}
           <strong>Reply STOP to opt out at any time or HELP for help.</strong>{" "}
           To request support, contact{" "}
           <strong>support@joeysartisanpizza.com</strong>.

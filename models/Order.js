@@ -33,6 +33,7 @@ const OrderSchema = new mongoose.Schema(
     customer: {
       name: { type: String, required: true, trim: true },
       phone: { type: String, required: true, trim: true },
+      smsPhone: { type: String, trim: true },
       address: { type: String, required: true, trim: true },
       email: { type: String, trim: true, lowercase: true, maxlength: 254 },
       smsOptIn: { type: Boolean, default: false },

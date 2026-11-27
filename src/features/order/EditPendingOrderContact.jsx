@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Button from "../../ui/Button";
 import { formatCurrency } from "../../utils/helpers";
 
@@ -12,6 +13,7 @@ export default function EditPendingOrderContact({ accessToken, order }) {
     address: order.customer?.address || "",
     email: order.customer?.email || "",
   });
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
@@ -30,7 +32,7 @@ export default function EditPendingOrderContact({ accessToken, order }) {
       const response = await fetch(`/api/orders/${encodeURIComponent(accessToken)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer }),
+        body: JSON.stringify({ customer: { ...customer, smsOptIn } }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Could not save contact information.");
@@ -67,13 +69,23 @@ export default function EditPendingOrderContact({ accessToken, order }) {
 
       <form className="max-w-2xl space-y-4" onSubmit={handleSubmit}>
         <label className="block text-sm font-medium text-stone-700">
-          Name
+          Full name
           <input className="input mt-1 w-full" name="name" value={customer.name} onChange={updateField} required minLength={2} maxLength={100} />
         </label>
         <label className="block text-sm font-medium text-stone-700">
           Phone number
           <input className="input mt-1 w-full" name="phone" type="tel" autoComplete="tel" value={customer.phone} onChange={updateField} required minLength={7} maxLength={30} />
+          <span className="mt-1 block text-xs font-normal text-stone-500">For delivery coordination and order support. This number is not SMS consent.</span>
         </label>
+        <section className="rounded-lg border border-stone-300 bg-stone-50 p-4" aria-labelledby="edit-sms-consent-heading">
+          <h2 id="edit-sms-consent-heading" className="font-semibold text-stone-800">Optional text message consent</h2>
+          <p className="mt-1 text-sm text-stone-600">You can save these changes and continue to payment without agreeing to texts.</p>
+          <div className="mt-3 flex items-start gap-3">
+            <input className="mt-1 h-4 w-4 shrink-0 accent-yellow-400" type="checkbox" id="editSmsOptIn" checked={smsOptIn} onChange={(event) => setSmsOptIn(event.target.checked)} />
+            <label htmlFor="editSmsOptIn" className="text-sm text-stone-700">Yes, I want Joey&apos;s Pizza to text me one transactional confirmation for this paid order. This is optional and is not a condition of purchase.</label>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-stone-600">Message frequency: one message for this paid order. Message and data rates may apply. Reply HELP for help or STOP to opt out. See the <Link className="underline" href="/terms">Terms and Conditions</Link> and <Link className="underline" href="/privacy">Privacy Policy</Link>.</p>
+        </section>
         <label className="block text-sm font-medium text-stone-700">
           Email for Stripe checkout (optional)
           <input className="input mt-1 w-full" name="email" type="email" autoComplete="email" value={customer.email} onChange={updateField} maxLength={254} />

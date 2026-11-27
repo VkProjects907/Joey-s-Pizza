@@ -117,7 +117,7 @@ function CreateOrder() {
       <form onSubmit={handleSubmit}>
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
           <label className="sm:basis-40" htmlFor="customer">
-            First Name
+            Full name
           </label>
 
           <input
@@ -148,7 +148,9 @@ function CreateOrder() {
               onChange={(event) => setContact((current) => ({ ...current, phone: event.target.value }))}
               required
             />
-            <p className="mt-1 text-xs text-stone-500">Enter a different country code if needed.</p>
+            <p className="mt-1 text-xs text-stone-500">
+              Required for delivery coordination and order support. This phone number does not sign you up for text messages; text consent is a separate optional choice below. Enter a different country code if needed.
+            </p>
 
             {formErrors.phone && (
               <p className="mt-2 rounded-md bg-red-100 p-2 text-xs text-red-700">
@@ -165,19 +167,31 @@ function CreateOrder() {
           <input className="input grow" type="email" name="email" id="email" value={contact.email} onChange={(event) => setContact((current) => ({ ...current, email: event.target.value }))} />
         </div>
 
-        <div className="mb-5 ml-0 flex items-start gap-3 sm:ml-40">
-          <input
-            className="mt-1 h-4 w-4 accent-yellow-400 focus:outline-none focus:ring focus:ring-yellow-400 focus:ring-offset-2"
-            type="checkbox"
-            name="smsOptIn"
-            id="smsOptIn"
-          />
-          <label htmlFor="smsOptIn" className="text-sm text-stone-600">
-            I agree to receive one transactional order confirmation text from Joey&apos;s Pizza per paid order. Optional; not required to purchase. Message and data rates may apply. Reply HELP for help or STOP to opt out. See our{" "}
-            <Link className="underline" href="/terms">Terms</Link> and{" "}
+        <section className="mb-5 rounded-lg border border-stone-300 bg-stone-50 p-4 sm:ml-40" aria-labelledby="sms-consent-heading">
+          <h3 id="sms-consent-heading" className="font-semibold text-stone-800">
+            Optional text message consent
+          </h3>
+          <p className="mt-1 text-sm text-stone-600">
+            You can place your order, create an account, and use this service without agreeing to texts. Leaving this box unchecked will not affect checkout.
+          </p>
+          <div className="mt-3 flex items-start gap-3">
+            <input
+              className="mt-1 h-4 w-4 shrink-0 accent-yellow-400 focus:outline-none focus:ring focus:ring-yellow-400 focus:ring-offset-2"
+              type="checkbox"
+              name="smsOptIn"
+              id="smsOptIn"
+              defaultChecked={false}
+            />
+            <label htmlFor="smsOptIn" className="text-sm text-stone-700">
+            Yes, I want Joey&apos;s Pizza to text me one transactional confirmation for each paid order at the phone number entered above. This is optional and is not a condition of purchase. A phone number entered in Stripe is only for payment billing and will not change the SMS recipient.
+            </label>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-stone-600">
+            Message frequency: one message per paid order. Message and data rates may apply. Reply HELP for help or STOP to opt out. See the{" "}
+            <Link className="underline" href="/terms">Terms and Conditions</Link> and{" "}
             <Link className="underline" href="/privacy">Privacy Policy</Link>.
-          </label>
-        </div>
+          </p>
+        </section>
 
         <div className="relative mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
           <label className="sm:basis-40" htmlFor="address">
