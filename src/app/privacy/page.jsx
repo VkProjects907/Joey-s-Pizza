@@ -66,6 +66,13 @@ export default function PrivacyPolicyPage() {
           Mobile numbers and SMS consent are not shared with third parties or
           affiliates for their own marketing or promotional purposes.
         </p>
+        <p>
+          The optional program sends one transactional order confirmation per
+          paid demo order. Message frequency is one message per paid order;
+          message and data rates may apply. Reply HELP for help or STOP to opt
+          out. Choosing not to receive texts does not affect your order or
+          account.
+        </p>
       </section>
 
       <section className="space-y-2">
